@@ -11,7 +11,7 @@ from pydub import AudioSegment
 from pygame import mixer
 from io import BytesIO
 from queue import Queue
-from moonif import moonshine_main_live_audio
+from moonif import moonshine_main_live_audio, transcribe_summary
 
 import pygame._sdl2 as sdl2
 
@@ -136,14 +136,14 @@ def process_command(text):
 
         if taskstate == TaskOp.add:
             tasks.append(command)
-            respond("Sure, adding " + command + " to your task list", 3)
-            respond("You have " + str(len(tasks)) + " tasks now.", 3)
+            respond("Sure, adding " + command + " to your task list", 4)
+            respond("You have " + str(len(tasks)) + " tasks now.", 4)
             taskstate = TaskOp.none
 
         elif taskstate == TaskOp.delete:
             tasks.remove(command)
-            respond("Sure, removing " + command + " from your task list", 3)
-            respond("You have " + str(len(tasks)) + " tasks now.", 3)
+            respond("Sure, removing " + command + " from your task list", 4)
+            respond("You have " + str(len(tasks)) + " tasks now.", 4)
             taskstate = TaskOp.none
 
         elif "add task" in command:
@@ -161,10 +161,11 @@ def process_command(text):
 
         elif "exit" in command:
             respond("Goodbye!")
+            transcribe_summary()
             sys.exit(0)
 
         else:
-            respond("Sorry, I'm not sure how to handle that command.", 2)
+            respond("Sorry, I don't recognize that command", 4)
 
 
 if __name__ == "__main__":

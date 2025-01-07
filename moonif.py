@@ -14,6 +14,7 @@ from moonshine_onnx import MoonshineOnnxModel, load_tokenizer
 _debug = False
 caption_cache = None
 transcribe = None
+model_used = None
 
 SAMPLING_RATE = 16000
 
@@ -122,14 +123,28 @@ def print_captions(text):
     if _debug: print("moonshine: \r" + (" " * MAX_LINE_LENGTH) + "\r" + text, end="", flush=True)
 
 
-
-
 def soft_reset(vad_iterator):
     """Soft resets Silero VADIterator without affecting VAD model state."""
     vad_iterator.triggered = False
     vad_iterator.temp_end = 0
     vad_iterator.current_sample = 0
 
+
+def transcribe_summary():
+    global model_used
+    global transcribe
+    global caption_cache
+
+    print(f"""
+                  model_name :  {model_used}
+                  MIN_REFRESH_SECS :  {MIN_REFRESH_SECS}s
+
+                  number inferences :  {transcribe.number_inferences}
+                  mean inference time :  {(transcribe.inference_secs / transcribe.number_inferences):.2f}s
+                  model realtime factor :  {(transcribe.speech_secs / transcribe.inference_secs):0.2f}x
+""")
+    if caption_cache:
+        print(f"Cached captions.\n{' '.join(caption_cache)}")
 
 
 # consider use of "moonshine/tiny".  Also check onnx quantize reduction uses
@@ -138,8 +153,10 @@ def soft_reset(vad_iterator):
 def moonshine_main_live_audio(cbfunc=None, model_name="moonshine/base", device=0):
     global transcribe
     global caption_cache
+    global model_used
 
     print(f"Loading Moonshine model '{model_name}' (using ONNX runtime) ...")
+    model_used = f"model {model_name} with ONNX runtime"
     transcribe = Transcriber(model_name=model_name, rate=SAMPLING_RATE)
 
     # see site-packages/silero_vad/model.py
@@ -220,12 +237,12 @@ def moonshine_main_live_audio(cbfunc=None, model_name="moonshine/base", device=0
 
             print(f"""
 
-             model_name :  {model_name}
-       MIN_REFRESH_SECS :  {MIN_REFRESH_SECS}s
+                  model_name :  {model_name}
+                  MIN_REFRESH_SECS :  {MIN_REFRESH_SECS}s
 
-      number inferences :  {transcribe.number_inferences}
-    mean inference time :  {(transcribe.inference_secs / transcribe.number_inferences):.2f}s
-  model realtime factor :  {(transcribe.speech_secs / transcribe.inference_secs):0.2f}x
+                  number inferences :  {transcribe.number_inferences}
+                  mean inference time :  {(transcribe.inference_secs / transcribe.number_inferences):.2f}s
+                  model realtime factor :  {(transcribe.speech_secs / transcribe.inference_secs):0.2f}x
 """)
             if caption_cache:
                 print(f"Cached captions.\n{' '.join(caption_cache)}")
