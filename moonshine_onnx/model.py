@@ -17,10 +17,12 @@ class MoonshineOnnxModel(object):
             assert (
                 model_name is not None
             ), "model_name should be specified if models_dir is not"
+            print("downloading model {}".format(model_name))
             preprocess, encode, uncached_decode, cached_decode = (
                 self._load_weights_from_hf_hub(model_name)
             )
         else:
+            print("using saved model from {}".format(models_dir))
             preprocess, encode, uncached_decode, cached_decode = [
                 f"{models_dir}/{x}.onnx"
                 for x in ["preprocess", "encode", "uncached_decode", "cached_decode"]

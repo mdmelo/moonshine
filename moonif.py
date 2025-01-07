@@ -25,6 +25,8 @@ MAX_LINE_LENGTH = 80
 MAX_SPEECH_SECS = 15
 MIN_REFRESH_SECS = 0.2
 
+MODEL_DIR = "/books/MachineLearning/Voice/misc/models/base"  # or None
+
 # see "Moonshine Speech Recognition For Live Transcription and Voice Commands.pdf"
 #
 # The Moonshine models (https://huggingface.co/UsefulSensors/moonshine) are trained
@@ -51,10 +53,11 @@ MIN_REFRESH_SECS = 0.2
 # The original vocabulary size was 32000; 768 special tokens were added.
 
 class Transcriber(object):
-    def __init__(self, model_name, rate=16000):
+    def __init__(self, model_name, rate=16000, model_dir=MODEL_DIR):
         if rate != 16000:
             raise ValueError("Moonshine supports sampling rate 16000 Hz.")
-        self.model = MoonshineOnnxModel(model_name=model_name)
+        # uses saved model if available
+        self.model = MoonshineOnnxModel(models_dir=model_dir, model_name=model_name)
         self.rate = rate
         self.tokenizer = load_tokenizer()
 
