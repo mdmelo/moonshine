@@ -6,12 +6,12 @@ from queue import Queue
 
 import numpy as np
 from silero_vad import VADIterator, load_silero_vad
-from sounddevice import InputStream
+from sounddevice import InputStream, query_devices
 
 from moonshine_onnx import MoonshineOnnxModel, load_tokenizer
 
 
-_debug = True
+_debug = False
 caption_cache = None
 transcribe = None
 
@@ -135,7 +135,7 @@ def soft_reset(vad_iterator):
 # consider use of "moonshine/tiny".  Also check onnx quantize reduction uses
 # warden's performance optimize.
 
-def moonshine_main_live_audio(cbfunc=None, model_name="moonshine/base"):
+def moonshine_main_live_audio(cbfunc=None, model_name="moonshine/base", device=0):
     global transcribe
     global caption_cache
 
@@ -154,6 +154,7 @@ def moonshine_main_live_audio(cbfunc=None, model_name="moonshine/base"):
     q = Queue()
     # stream for a PortAudio input stream (using NumPy)
     stream = InputStream(
+        device=device,
         samplerate=SAMPLING_RATE,
         channels=1,
         blocksize=CHUNK_SIZE,
@@ -168,9 +169,10 @@ def moonshine_main_live_audio(cbfunc=None, model_name="moonshine/base"):
 
     recording = False
 
-    print("Press Ctrl+C to quit live captions.\n")
+    if _debug: print("Press Ctrl+C to quit live captions.\n")
 
     with stream:
+        print("moonshine ASR ready...")
         print_captions("Ready...\n")
 
         try:
@@ -231,4 +233,28 @@ def moonshine_main_live_audio(cbfunc=None, model_name="moonshine/base"):
 
 
 if __name__ == "__main__":
-    moonshine_main_live_audio()
+    #     0 Plantronics C720-M: USB Audio (hw:0,0), ALSA (1 in, 2 out)
+    #     1 HDA Intel PCH: ALC269VC Analog (hw:1,0), ALSA (2 in, 4 out)
+    #     2 HDA Intel PCH: HDMI 0 (hw:1,3), ALSA (0 in, 8 out)
+    #     3 HDA Intel PCH: HDMI 1 (hw:1,7), ALSA (0 in, 8 out)
+    #     4 HDA Intel PCH: HDMI 2 (hw:1,8), ALSA (0 in, 8 out)
+    #     5 HD Pro Webcam C920: USB Audio (hw:2,0), ALSA (2 in, 0 out)
+    #     6 sysdefault, ALSA (128 in, 128 out)
+    #     7 front, ALSA (0 in, 2 out)
+    #     8 surround40, ALSA (0 in, 2 out)
+    #     9 iec958, ALSA (0 in, 2 out)
+    #    10 spdif, ALSA (1 in, 2 out)
+    #    11 pulse, ALSA (32 in, 32 out)
+    #    12 a52, ALSA (0 in, 6 out)
+    #    13 speex, ALSA (1 in, 1 out)
+    #    14 upmix, ALSA (8 in, 8 out)
+    #    15 vdownmix, ALSA (6 in, 6 out)
+    #    16 dmix, ALSA (0 in, 2 out)
+    #  * 17 default, ALSA (32 in, 32 out)
+    devices = query_devices()
+    for ndx, d in enumerate(devices):
+        if d["name"].startswith("Plantronics C720-M"):
+            break
+    print("using device {} [{}]".format(ndx, d["name"]))
+
+    moonshine_main_live_audio(device=ndx)

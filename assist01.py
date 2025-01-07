@@ -1,6 +1,7 @@
 import sys
 import time
 
+from sounddevice import query_devices
 import speech_recognition as sr
 import numpy as np
 
@@ -11,32 +12,42 @@ from io import BytesIO
 from queue import Queue
 from moonif import moonshine_main_live_audio
 
+import pygame._sdl2 as sdl2
 
 tasks = []
 listeningToTask = False
 
 _debug = True
 
-def speak(text, lang='en', play=True, delay=0):
+
+def get_play_devices():
+    mixer.init()
+    devices = sdl2.audio.get_audio_device_names(False)
+    return devices
+
+
+def speak(text, lang='en', play=True, delay=2):
     fp = BytesIO()
     tts = gTTS(text, lang=lang)
     tts.write_to_fp(fp)
 
     if play:
-        mixer.init()
+        # mixer.init()
         fp.seek(0)
         mixer.music.load(fp, "mp3")
+
+        # see https://www.pygame.org/docs/ref/music.html#pygame.mixer.music.set_volume
+        # The volume argument is a float between 0.0 and 1.0 that sets the volume level.
+        # When new music is loaded the volume is reset to full volume. If volume is a negative
+        # value it will be ignored and the volume will remain set at the current level. If the
+        # volume argument is greater than 1.0, the volume will be set to 1.0.
+        mixer.music.set_volume(1.0)
         mixer.music.play()
 
     if delay > 0:
         time.sleep(delay)
 
     return fp
-
-
-# test text-to-speech
-sound = speak('hello, Welcome to Voice Assistant!')
-time.sleep(5)
 
 
 def listen_for_command():
@@ -116,8 +127,8 @@ def process_command(text):
 
         if listeningToTask:
             tasks.append(command)
-            respond("Sure, adding " + command + " to your task list")
-            respond("You have " + str(len(tasks)) + " tasks now.")
+            respond("Sure, adding " + command + " to your task list", 3)
+            respond("You have " + str(len(tasks)) + " tasks now.", 3)
             listeningToTask = False
 
         elif "add task" in command:
@@ -134,13 +145,31 @@ def process_command(text):
             sys.exit(0)
 
         else:
-            respond("Sorry, I'm not sure how to handle that command.")
+            respond("Sorry, I'm not sure how to handle that command.", 2)
 
 
 if __name__ == "__main__":
+    # ['Built-in Audio Analog Stereo', 'Plantronics C720-M Analog Stereo']
+    # devices = get_play_devices()
+    playdevice = "Built-in Audio Analog Stereo"
+    mixer.pre_init(devicename=playdevice)
+    mixer.init()
+
+    recdevice = "Plantronics C720-M"
+    devices = query_devices()
+    for ndx, d in enumerate(devices):
+        if d["name"].startswith(recdevice):
+            break
+
+    print("play device {}, record device {} [{}]".format(playdevice, ndx, d["name"]))
+
+    # test text-to-speech
+    sound = speak('hello, Welcome to Voice Assistant!')
+    time.sleep(5)
+
     respond("Greetings, Wahoo!")
 
-    moonshine_main_live_audio(cbfunc=process_command, model_name="moonshine/base")
+    moonshine_main_live_audio(cbfunc=process_command, model_name="moonshine/base", device=ndx)
     respond("Goodbye, Wahoo!")
 
-
+    mixer.quit()
