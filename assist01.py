@@ -1,5 +1,6 @@
 import sys
 import time
+from enum import Enum
 
 from sounddevice import query_devices
 import speech_recognition as sr
@@ -14,8 +15,16 @@ from moonif import moonshine_main_live_audio
 
 import pygame._sdl2 as sdl2
 
+
+class TaskOp(Enum):
+    none = 0
+    add = 1
+    delete = 2
+    show = 3
+
+
 tasks = []
-listeningToTask = False
+taskstate = TaskOp.none
 
 _debug = True
 
@@ -78,7 +87,7 @@ def respond(response_text, delay=2):
 
 def main():
     global tasks
-    global listeningToTask
+    global taskstate
 
     triggerKeyword = "wahoo"
     command = ""
@@ -90,13 +99,13 @@ def main():
         command = listen_for_command()
 
         if command:
-            if listeningToTask:
+            if taskstate == TaskOp.add:
                 tasks.append(command)
-                listeningToTask = False
+                taskstate = TaskOp.none
                 respond("Adding " + command + " to your task list. You have " + str(len(tasks)) + " currently in your list.")
 
             elif "add a task" in command:
-                listeningToTask = True
+                taskstate = TaskOp.add
                 respond("What is the task?")
 
             elif "list tasks" in command:
@@ -114,7 +123,7 @@ def main():
 
 def process_command(text):
     global tasks
-    global listeningToTask
+    global taskstate
 
     if _debug:
         print("\nMoonshine VR supplies '{}'".format(text))
@@ -125,20 +134,30 @@ def process_command(text):
     if text:
         command = text.casefold()
 
-        if listeningToTask:
+        if taskstate == TaskOp.add:
             tasks.append(command)
             respond("Sure, adding " + command + " to your task list", 3)
             respond("You have " + str(len(tasks)) + " tasks now.", 3)
-            listeningToTask = False
+            taskstate = TaskOp.none
+
+        elif taskstate == TaskOp.delete:
+            tasks.remove(command)
+            respond("Sure, removing " + command + " from your task list", 3)
+            respond("You have " + str(len(tasks)) + " tasks now.", 3)
+            taskstate = TaskOp.none
 
         elif "add task" in command:
-            listeningToTask = True
+            taskstate = TaskOp.add
             respond("Sure, what is the task?")
 
         elif "list task" in command:
             respond("Sure, your tasks are:")
             for task in tasks:
                 respond(task)
+
+        elif "delete task" in command:
+            taskstate = TaskOp.delete
+            respond("Sure, what is the task?")
 
         elif "exit" in command:
             respond("Goodbye!")
