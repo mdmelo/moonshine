@@ -49,8 +49,8 @@ $ uv venv --python 3.9 venv
 Using CPython 3.9.21
 Creating virtual environment at: venv
 Activate with: source venv/bin/activate
-mike@debian12:/tmp/moonshine$ source venv/bin/activate
-(venv) mike@debian12:/tmp/moonshine$ python -V
+$ source venv/bin/activate
+$ python -V
 Python 3.9.21
 
 
