@@ -171,17 +171,23 @@ def process_command(text):
 if __name__ == "__main__":
     # ['Built-in Audio Analog Stereo', 'Plantronics C720-M Analog Stereo']
     # devices = get_play_devices()
-    playdevice = "Built-in Audio Analog Stereo"
-    mixer.pre_init(devicename=playdevice)
+
+    # uncomment these if you want to use non-default playback device
+    # playdevice = "Built-in Audio Analog Stereo"
+    # mixer.pre_init(devicename=playdevice)
     mixer.init()
 
-    recdevice = "Plantronics C720-M"
-    devices = query_devices()
-    for ndx, d in enumerate(devices):
-        if d["name"].startswith(recdevice):
-            break
+    # we're using the default recording device
+    ndx = 0
 
-    print("play device {}, record device {} [{}]".format(playdevice, ndx, d["name"]))
+    # uncomment and adjust to use a non-default recording device
+    # recdevice = "Plantronics C720-M"
+    # devices = query_devices()
+    # for ndx, d in enumerate(devices):
+    #     if d["name"].startswith(recdevice):
+    #         break
+    #
+    # print("play device {}, record device {} [{}]".format(playdevice, ndx, d["name"]))
 
     # test text-to-speech
     sound = speak('hello, Welcome to Voice Assistant!')

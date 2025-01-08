@@ -17,8 +17,8 @@ from moonshine_onnx import MoonshineOnnxModel
 _benchmark = False
 transcribe = None
 
-ASSETS_DIR = "/files/pyASR/moonshine/moonshine/assets/"
-DEFAULT_AUDIO_FILE = "/files/pyASR/moonshine/moonshine/assets/beckett.wav"
+ASSETS_DIR = "./moonshine/assets/"
+DEFAULT_AUDIO_FILE = "./moonshine/assets/beckett.wav"
 
 
 def load_audio(audio, return_numpy=False):
@@ -152,7 +152,7 @@ if __name__ == "__main__":
     print("using recorded audio from ", recorded_audio)
 
     # download model from HF
-    moonshine_main_recorded_audio(recorded_audio, "moonshine/base", None)
+    # moonshine_main_recorded_audio(recorded_audio, "moonshine/base", None)
 
     # use saved model
-    # moonshine_main_recorded_audio(recorded_audio, "base", "/books/MachineLearning/Voice/misc/models/base")
+    moonshine_main_recorded_audio(recorded_audio, "base", "./models/base")

@@ -82,9 +82,10 @@ def store_model(model_name, outdir):
 
 
 if __name__ == "__main__":
-    model = "tiny" # or "base"
+    # tiny -or- base
+    model = sys.argv[1] if len(sys.argv) > 1 else "tiny"
     model_name = "moonshine/" + model
-    outdir = "/books/MachineLearning/Voice/misc/models/" + model
+    outdir = "./models/" + model
 
     store_model(model_name, outdir)
     print("saved {} model to {}".format(model_name, outdir))

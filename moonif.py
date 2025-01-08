@@ -26,7 +26,7 @@ MAX_LINE_LENGTH = 80
 MAX_SPEECH_SECS = 15
 MIN_REFRESH_SECS = 0.2
 
-MODEL_DIR = "/books/MachineLearning/Voice/misc/models/base"  # or None
+MODEL_DIR = "./models/base"  # or None
 
 # see "Moonshine Speech Recognition For Live Transcription and Voice Commands.pdf"
 #
