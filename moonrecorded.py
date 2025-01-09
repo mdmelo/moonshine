@@ -14,7 +14,7 @@ import numpy as np
 from moonshine import load_model, Moonshine
 from moonshine_onnx import MoonshineOnnxModel
 
-_benchmark = False
+_benchmark = True
 transcribe = None
 
 ASSETS_DIR = "./moonshine/assets/"
@@ -109,9 +109,8 @@ def load_tokenizer():
 def moonshine_main_recorded_audio(audio, model_name, model_dir, cbfunc=None):
 
     if _benchmark:
-        # using moonshine in misc subdir
-        model = load_model(model_name)
-        print("model loaded...")
+        model = load_model("moonshine/" + model_name.split("/")[-1])
+        print("model loaded from HF...")
 
         audio = load_audio(audio)
         num_seconds = assert_audio_size(audio)
@@ -151,8 +150,4 @@ if __name__ == "__main__":
         recorded_audio = DEFAULT_AUDIO_FILE
     print("using recorded audio from ", recorded_audio)
 
-    # download model from HF
-    # moonshine_main_recorded_audio(recorded_audio, "moonshine/base", None)
-
-    # use saved model
     moonshine_main_recorded_audio(recorded_audio, "base", "./models/base")

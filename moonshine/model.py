@@ -1,6 +1,8 @@
 import keras
 from keras import Model
 
+_debug = False
+
 # Einops (Einstein Operations) is a powerful library for tensor manipulation,
 # offering a more readable and efficient way to perform operations on tensors.
 # It abstracts away the complexity of tensor reshaping, slicing, and rearranging
@@ -36,6 +38,9 @@ class AudioPreprocessor(object):
         self.preprocess.set_weights(weights)
 
     def __call__(self, inputs):
+        if _debug:
+            print("preprocessor:")
+            print(self.preprocess.summary())
         return self.preprocess(inputs)
 
 
@@ -248,6 +253,9 @@ class Encoder(object):
         self.encoder.set_weights(weights)
 
     def __call__(self, x, seq_len):
+        if _debug:
+            print("encoder:")
+            print(self.encoder.summary())
         return self.encoder([x, seq_len])
 
 
@@ -537,7 +545,11 @@ class Decoder(object):
 
         logits = self.embedding_layer(x, reverse=True)
 
-        return Model(inputs=[inputs, context, seq_len], outputs=[logits] + outputs)
+        model = Model(inputs=[inputs, context, seq_len], outputs=[logits] + outputs)
+        if _debug:
+            print("uncached decoder:")
+            print(model.summary())
+        return model
 
     def get_cached_call(self, dim, rot_embed_dim, key_dim, n_head, n_layers):
         inputs = keras.layers.Input(shape=[None], dtype="int32")
@@ -581,9 +593,13 @@ class Decoder(object):
 
         logits = self.embedding_layer(x, reverse=True)
 
-        return Model(
+        model = Model(
             inputs=[inputs, context, seq_len] + cache, outputs=[logits] + outputs
         )
+        if _debug:
+            print("cached decoder:")
+            print(model.summary())
+        return model
 
     def set_weights(self, weights):
         self.uncached_call.set_weights(weights)
